@@ -41,7 +41,14 @@ The following Certificate Policy identifiers are reserved for use by CAs to asse
 
 `{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) organization-validated(2)} (2.23.140.1.2.2);` and
 
-`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) individual-validated(3)} (2.23.140.1.2.3)`.
+`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) individual-validated(3)} (2.23.140.1.2.3);` and
+
+`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) domain-validated-legacy-restricted-application(4)} (2.23.140.1.2.4);` and
+
+`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) organization-validated-legacy-restricted-application(5)} (2.23.140.1.2.5);` and
+
+`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) individual-validated-legacy-restricted-application(6)} (2.23.140.1.2.6)`.
+
 
 ### 1.2.1 Revisions
 
@@ -2707,13 +2714,15 @@ CAs SHALL NOT include additional names unless the CA is aware of a reason for in
 |     `subjectPublicKeyInfo` | See [Section 7.1.3.1](#7131-subjectpublickeyinfo) |
 |     `issuerUniqueID`       | MUST NOT be present |
 |     `subjectUniqueID`      | MUST NOT be present |
-|     `extensions`           | See [Section 7.1.2.7.6](#71276-subscriber-certificate-extensions) |
+|     `extensions`           | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) |
 | `signatureAlgorithm`       | Encoded value MUST be byte-for-byte identical to the `tbsCertificate.signature`. |
 | `signature`                | |
 
 ##### 7.1.2.7.1 Subscriber Certificate Types
 
-There are four types of Subscriber Certificates that may be issued, which vary based on the amount of Subject Information that is included.  Each of these certificate types shares a common profile, with three exceptions: the `subject` name fields that may occur, how those fields are validated, and the contents of the `certificatePolicies` extension.
+There are eight types of Subscriber Certificates that may be issued, which vary based on the amount of Subject Information that is included and on the algorithm of the certified Public Key. Each of these certificate types shares a common profile, with four exceptions: the `subject` name fields that may occur, how those fields are validated, the contents of the `certificatePolicies` extension, and the algorithm permitted within the `subjectPublicKeyInfo` field.
+
+Table: Unrestricted Certificate Types
 
 | **Type**                    | **Description**                                       |
 | ----                        | ------                                                |
@@ -2722,7 +2731,20 @@ There are four types of Subscriber Certificates that may be issued, which vary b
 | Organization Validated (OV) | See [Section 7.1.2.7.4](#71274-organization-validated) |
 | Extended Validation (EV)    | See [Section 7.1.2.7.5](#71275-extended-validation)    |
 
-**Note**: Although each Subscriber Certificate type varies in Subject Information, all Certificates provide the same level of assurance of the device identity (domain name and/or IP address).
+Table: Legacy Restricted Certificate Types
+
+| **Type**                    | **Description**                                       |
+| ----                        | ------                                                |
+| Legacy Restricted Domain Validated (DV)       | See [Section 7.1.2.7.6](#71276-legacy-restricted-domain-validated)       |
+| Legacy Restricted Individual Validated (IV)   | See [Section 7.1.2.7.7](#71277-legacy-restricted-individual-validated)   |
+| Legacy Restricted Organization Validated (OV) | See [Section 7.1.2.7.8](#71278-legacy-restricted-organization-validated) |
+| Legacy Restricted Extended Validation (EV)    | See [Section 7.1.2.7.9](#71279-legacy-restricted-extended-validation)    |
+
+A Subscriber Certificate whose `subjectPublicKeyInfo` field identifies a Public Key specified in [Section 7.1.3.1.3](#71313-ml-dsa) MUST be one of the Legacy Restricted Certificate Types. A Subscriber Certificate that is one of the Legacy Restricted Certificate Types MUST identify a Public Key specified in [Section 7.1.3.1.3](#71313-ml-dsa) in its `subjectPublicKeyInfo` field.
+
+**Note**: Although each Subscriber Certificate type varies in Subject Information, all Certificates provide the same level of assurance of the device identity (domain name and/or IP address). 
+
+**Note**: The Legacy Restricted Certificate Types are intended for Relying Parties that validate TLS server certificates through operating system or library trust stores and that cannot be updated to support new certificate formats or validation mechanisms. Certificates of these types are not submitted to Certificate Transparency Logs and do not contain Signed Certificate Timestamps, because the size of the Public Keys and signatures specified in Section 7.1.3.1.3 imposes costs on Log Operators that these Requirements do not require them to bear. Certificate Transparency provides a public, verifiable record through which Subscribers, domain owners, and the broader community detect misissuance that would otherwise go unobserved. Certificates of the Legacy Restricted Certificate Types are not subject to that record. Misissuance of such a Certificate cannot be detected by monitoring Certificate Transparency Logs, and detection instead depends on the Issuing CA's own controls and audit. Relying Parties, Subscribers, and domain owners should account for this when determining whether to rely upon, request, or permit the issuance of these Certificate Types.
 
 ##### 7.1.2.7.2 Domain Validated
 
@@ -2731,8 +2753,8 @@ For a Subscriber Certificate to be Domain Validated, it MUST meet the following 
 | **Field**             | **Requirements**     |
 | ---                   | -------              |
 | `subject`             | See following table. |
-| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.1` as a `policyIdentifier`. See [Section 7.1.2.7.9](#71279-subscriber-certificate-certificate-policies). |
-| All other extensions  | See [Section 7.1.2.7.6](#71276-subscriber-certificate-extensions) |
+| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.1` as a `policyIdentifier`. See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies). |
+| All other extensions  | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) |
 
 All `subject` names MUST be encoded as specified in [Section 7.1.4](#714-name-forms).
 
@@ -2753,8 +2775,8 @@ For a Subscriber Certificate to be Individual Validated, it MUST meet the follow
 | **Field**             | **Requirements**     |
 | --                    | -------              |
 | `subject`             | See following table. |
-| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.3` as a `policyIdentifier`. See [Section 7.1.2.7.9](#71279-subscriber-certificate-certificate-policies). |
-| All other extensions  | See [Section 7.1.2.7.6](#71276-subscriber-certificate-extensions) |
+| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.3` as a `policyIdentifier`. See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies). |
+| All other extensions  | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) |
 
 All `subject` names MUST be encoded as specified in [Section 7.1.4](#714-name-forms).
 
@@ -2785,8 +2807,8 @@ For a Subscriber Certificate to be Organization Validated, it MUST meet the foll
 | **Field**             | **Requirements**     |
 | ---                   | -------              |
 | `subject`             | See following table. |
-| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.2` as a `policyIdentifier`. See [Section 7.1.2.7.9](#71279-subscriber-certificate-certificate-policies). |
-| All other extensions  | See [Section 7.1.2.7.6](#71276-subscriber-certificate-extensions) |
+| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.2` as a `policyIdentifier`. See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies). |
+| All other extensions  | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) |
 
 All `subject` names MUST be encoded as specified in [Section 7.1.4](#714-name-forms).
 
@@ -2820,34 +2842,135 @@ In addition, it MUST meet the following profile:
 | **Field**             | **Requirements**     |
 | ---                   | -------              |
 | `subject`             | See Guidelines for the Issuance and Management of Extended Validation Certificates, Section 7.1.4.2. |
-| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.1` as a `policyIdentifier`. See [Section 7.1.2.7.9](#71279-subscriber-certificate-certificate-policies). |
-| All other extensions  | See [Section 7.1.2.7.6](#71276-subscriber-certificate-extensions) and the Guidelines for the Issuance and Management of Extended Validation Certificates. |
+| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.1` as a `policyIdentifier`. See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies). |
+| All other extensions  | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) and the Guidelines for the Issuance and Management of Extended Validation Certificates. |
 
 In addition, `subject` Attributes MUST NOT contain only metadata such as '.', '-', and ' ' (i.e. space) characters, and/or any other indication that the value is absent, incomplete, or not applicable.
 
-##### 7.1.2.7.6 Subscriber Certificate Extensions
+##### 7.1.2.7.6 Legacy Restricted Domain Validated
+
+For a Subscriber Certificate to be Legacy Restricted Domain Validated, it MUST meet the following profile:
+
+| **Field**             | **Requirements**     |
+| ---                   | -------              |
+| `subject`             | See following table. |
+| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.4` as a `policyIdentifier`. See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies). |
+| All other extensions  | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) |
+
+All `subject` names MUST be encoded as specified in [Section 7.1.4](#714-name-forms).
+
+The following table details the acceptable `AttributeType`s that may appear within the `type` field of an `AttributeTypeAndValue`, as well as the contents permitted within the `value` field.
+
+Table: Legacy Restricted Domain Validated `subject` Attributes
+
+| **Attribute Name**       | **Presence**    | **Value**   | **Verification** |
+| --                       | ---             | ---         | --               |
+| `countryName`            | MAY             | The two-letter ISO 3166-1 country code for the country associated with the Subject. | [Section 3.2.2.3](#3223-verification-of-country) |
+| `commonName`             | NOT RECOMMENDED | If present, MUST contain a value derived from the `subjectAltName` extension according to [Section 7.1.4.3](#7143-subscriber-certificate-common-name-attribute). | |
+| Any other attribute      | MUST NOT        | -           | -                |
+
+##### 7.1.2.7.7 Legacy Restricted Individual Validated
+
+For a Subscriber Certificate to be Legacy Restricted Individual Validated, it MUST meet the following profile:
+
+| **Field**             | **Requirements**     |
+| --                    | -------              |
+| `subject`             | See following table. |
+| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.6` as a `policyIdentifier`. See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies). |
+| All other extensions  | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) |
+
+All `subject` names MUST be encoded as specified in [Section 7.1.4](#714-name-forms).
+
+The following table details the acceptable `AttributeType`s that may appear within the `type` field of an `AttributeTypeAndValue`, as well as the contents permitted within the `value` field.
+
+Table: Legacy Restricted Individual Validated `subject` Attributes
+
+| **Attribute Name**             | **Presence**    | **Value**   | **Verification** |
+| ---                            | --              | ---         | --               |
+| `countryName`                  | MUST            | The two-letter ISO 3166-1 country code for the country associated with the Subject. If a Country is not represented by an official ISO 3166-1 country code, the CA MUST specify the ISO 3166-1 user-assigned code of `XX`, indicating that an official ISO 3166-1 alpha-2 code has not been assigned. | [Section 3.2.3](#323-authentication-of-individual-identity) |
+| `stateOrProvinceName`          | MUST / MAY      | MUST be present if `localityName` is absent, MAY be present otherwise. If present, MUST contain the Subject's state or province information. | [Section 3.2.3](#323-authentication-of-individual-identity) |
+| `localityName`                 | MUST / MAY      | MUST be present if `stateOrProvinceName` is absent, MAY be present otherwise. If present, MUST contain the Subject's locality information. | [Section 3.2.3](#323-authentication-of-individual-identity) |
+| `postalCode`                   | NOT RECOMMENDED | If present, MUST contain the Subject's zip or postal information. | [Section 3.2.3](#323-authentication-of-individual-identity) |
+| `streetAddress`                | NOT RECOMMENDED | If present, MUST contain the Subject's street address information. Multiple instances MAY be present. | [Section 3.2.3](#323-authentication-of-individual-identity) |
+| `organizationName`             | NOT RECOMMENDED | If present, MUST contain the Subject's name and/or DBA/tradename. The CA MAY include information in this field that differs slightly from the verified name, such as common variations or abbreviations, provided that the CA documents the difference and any abbreviations used are locally accepted abbreviations. If both are included, the DBA/tradename SHALL appear first, followed by the Subject's name in parentheses. | [Section 3.2.3](#323-authentication-of-individual-identity) |
+| `surname`                      | MUST            | The Subject's surname. | [Section 3.2.3](#323-authentication-of-individual-identity) |
+| `givenName`                    | MUST            | The Subject's given name. | [Section 3.2.3](#323-authentication-of-individual-identity) |
+| `organizationalUnitName`       | MUST NOT        | -           | -           |
+| `commonName`                   | NOT RECOMMENDED | If present, MUST contain a value derived from the `subjectAltName` extension according to [Section 7.1.4.3](#7143-subscriber-certificate-common-name-attribute). | |
+| Any other attribute            | NOT RECOMMENDED | -           | See [Section 7.1.4.4](#7144-other-subject-attributes) |
+
+In addition, `subject` Attributes MUST NOT contain only metadata such as '.', '-', and ' ' (i.e. space) characters, and/or any other indication that the value is absent, incomplete, or not applicable.
+
+##### 7.1.2.7.8 Legacy Restricted Organization Validated
+
+For a Subscriber Certificate to be Legacy Restricted Organization Validated, it MUST meet the following profile:
+
+| **Field**             | **Requirements**     |
+| ---                   | -------              |
+| `subject`             | See following table. |
+| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.2.5` as a `policyIdentifier`. See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies). |
+| All other extensions  | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) |
+
+All `subject` names MUST be encoded as specified in [Section 7.1.4](#714-name-forms).
+
+The following table details the acceptable `AttributeType`s that may appear within the `type` field of an `AttributeTypeAndValue`, as well as the contents permitted within the `value` field.
+
+Table: Legacy Restricted Organization Validated `subject` Attributes
+
+| **Attribute Name**             | **Presence**    | **Value**   | **Verification** |
+| ---                            | --               | ---        | --               |
+| `domainComponent`       | MAY | If present, this field MUST contain a Domain Label from a Domain Name. The `domainComponent` fields for the Domain Name MUST be in a single ordered sequence containing all Domain Labels from the Domain Name. The Domain Labels MUST be encoded in the reverse order to the on-wire representation of domain names in the DNS protocol, so that the Domain Label closest to the root is encoded first. Multiple instances MAY be present. | [Section 3.2](#32-initial-identity-validation) |
+| `countryName`                  | MUST            | The two-letter ISO 3166-1 country code for the country associated with the Subject. If a Country is not represented by an official ISO 3166-1 country code, the CA MUST specify the ISO 3166-1 user-assigned code of `XX`, indicating that an official ISO 3166-1 alpha-2 code has not been assigned. | [Section 3.2.2.1](#3221-identity) |
+| `stateOrProvinceName`          | MUST / MAY      | MUST be present if `localityName` is absent, MAY be present otherwise. If present, MUST contain the Subject's state or province information. | [Section 3.2.2.1](#3221-identity) |
+| `localityName`                 | MUST / MAY      | MUST be present if `stateOrProvinceName` is absent, MAY be present otherwise. If present, MUST contain the Subject's locality information. | [Section 3.2.2.1](#3221-identity) |
+| `postalCode`                   | NOT RECOMMENDED | If present, MUST contain the Subject's zip or postal information. | [Section 3.2.2.1](#3221-identity) |
+| `streetAddress`                | NOT RECOMMENDED | If present, MUST contain the Subject's street address information. Multiple instances MAY be present.| [Section 3.2.2.1](#3221-identity) |
+| `organizationName`             | MUST            | The Subject's name and/or DBA/tradename. The CA MAY include information in this field that differs slightly from the verified name, such as common variations or abbreviations, provided that the CA documents the difference and any abbreviations used are locally accepted abbreviations; e.g. if the official record shows "Company Name Incorporated", the CA MAY use "Company Name Inc." or "Company Name". If both are included, the DBA/tradename SHALL appear first, followed by the Subject's name in parentheses. | [Section 3.2.2.2](#3222-dbatradename) |
+| `surname`                      | MUST NOT        | -           | -           |
+| `givenName`                    | MUST NOT        | -           | -           |
+| `organizationalUnitName`       | MUST NOT        | -           | -           |
+| `commonName`                   | NOT RECOMMENDED | If present, MUST contain a value derived from the `subjectAltName` extension according to [Section 7.1.4.3](#7143-subscriber-certificate-common-name-attribute). | |
+| Any other attribute            | NOT RECOMMENDED | -           | See [Section 7.1.4.4](#7144-other-subject-attributes) |
+
+In addition, `subject` Attributes MUST NOT contain only metadata such as '.', '-', and ' ' (i.e. space) characters, and/or any other indication that the value is absent, incomplete, or not applicable.
+
+##### 7.1.2.7.9 Legacy Restricted Extended Validation
+
+For a Subscriber Certificate to be Legacy Restricted Extended Validation, it MUST comply with the Certificate Profile specified in the then-current version of the Guidelines for the Issuance and Management of Extended Validation Certificates.
+
+In addition, it MUST meet the following profile:
+
+| **Field**             | **Requirements**     |
+| ---                   | -------              |
+| `subject`             | See Guidelines for the Issuance and Management of Extended Validation Certificates, Section 7.1.4.2. |
+| `certificatePolicies` | MUST be present. MUST assert the [Reserved Certificate Policy Identifier](#7161-reserved-certificate-policy-identifiers) of `2.23.140.1.1.1` as a `policyIdentifier`. See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies). |
+| All other extensions  | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extensions) and the Guidelines for the Issuance and Management of Extended Validation Certificates. |
+
+In addition, `subject` Attributes MUST NOT contain only metadata such as '.', '-', and ' ' (i.e. space) characters, and/or any other indication that the value is absent, incomplete, or not applicable.
+
+##### 7.1.2.7.10 Subscriber Certificate Extensions
 
 | **Extension**                     | **Presence**    | **Critical** | **Description** |
 | --------------------------------- | -----------     | ------------ | -------------------------------------- |
-| `authorityInformationAccess`      | MUST            | N            | See [Section 7.1.2.7.7](#71277-subscriber-certificate-authority-information-access) |
+| `authorityInformationAccess`      | MUST            | N            | See [Section 7.1.2.7.11](#71277-subscriber-certificate-authority-information-access) |
 | `authorityKeyIdentifier`          | MUST            | N            | See [Section 7.1.2.11.1](#712111-authority-key-identifier) |
-| `certificatePolicies`             | MUST            | N            | See [Section 7.1.2.7.9](#71279-subscriber-certificate-certificate-policies) |
-| `extKeyUsage`                     | MUST            | N            | See [Section 7.1.2.7.10](#712710-subscriber-certificate-extended-key-usage) |
-| `subjectAltName`                  | MUST            | *            | See [Section 7.1.2.7.12](#712712-subscriber-certificate-subject-alternative-name) |
+| `certificatePolicies`             | MUST            | N            | See [Section 7.1.2.7.13](#712713-subscriber-certificate-certificate-policies) |
+| `extKeyUsage`                     | MUST            | N            | See [Section 7.1.2.7.14](#712714-subscriber-certificate-extended-key-usage) |
+| `subjectAltName`                  | MUST            | *            | See [Section 7.1.2.7.16](#712716-subscriber-certificate-subject-alternative-name) |
 | `nameConstraints`                 | MUST NOT        | -            | - |
-| `keyUsage`                        | SHOULD          | Y            | See [Section 7.1.2.7.11](#712711-subscriber-certificate-key-usage) |
-| `basicConstraints`                | MAY             | Y            | See [Section 7.1.2.7.8](#71278-subscriber-certificate-basic-constraints) |
+| `keyUsage`                        | SHOULD          | Y            | See [Section 7.1.2.7.15](#712715-subscriber-certificate-key-usage) |
+| `basicConstraints`                | MAY             | Y            | See [Section 7.1.2.7.12](#712712-subscriber-certificate-basic-constraints) |
 | `crlDistributionPoints`           | *               | N            | See [Section 7.1.2.11.2](#712112-crl-distribution-points) |
-| Signed Certificate Timestamp List | MAY             | N            | See [Section 7.1.2.11.3](#712113-signed-certificate-timestamp-list) |
+| Signed Certificate Timestamp List | MAY / MUST NOT  | N            | MUST NOT be present in Subscriber Certificates asserting a Legacy Restricted Reserved Certificate Policy Identifier. See [Section 7.1.2.11.3](#712113-signed-certificate-timestamp-list) |
 | `subjectKeyIdentifier`            | NOT RECOMMENDED | N            | See [Section 7.1.2.11.4](#712114-subject-key-identifier) |
 | Any other extension               | NOT RECOMMENDED | -            | See [Section 7.1.2.11.5](#712115-other-extensions) |
 
 **Notes**:
 
-- whether or not the `subjectAltName` extension should be marked Critical depends on the contents of the Certificate's `subject` field, as detailed in [Section 7.1.2.7.12](#712712-subscriber-certificate-subject-alternative-name).
+- whether or not the `subjectAltName` extension should be marked Critical depends on the contents of the Certificate's `subject` field, as detailed in [Section 7.1.2.7.16](#712716-subscriber-certificate-subject-alternative-name).
 - whether or not the CRL Distribution Points extension must be present depends on 1) whether the Certificate includes an Authority Information Access extension with an `id-ad-ocsp` accessMethod and 2) the Certificate's validity period, as detailed in [Section 7.1.2.11.2](#712112-crl-distribution-points).
 
-##### 7.1.2.7.7 Subscriber Certificate Authority Information Access
+##### 7.1.2.7.11 Subscriber Certificate Authority Information Access
 
 The `AuthorityInfoAccessSyntax` MUST contain one or more `AccessDescription`s. Each `AccessDescription` MUST only contain a permitted `accessMethod`, as detailed below, and each `accessLocation` MUST be encoded as the specified `GeneralName` type.
 
@@ -2859,14 +2982,14 @@ The `AuthorityInfoAccessSyntax` MAY contain multiple `AccessDescription`s with t
 | `id-ad-caIssuers` (OID: 1.3.6.1.5.5.7.48.2) | `uniformResourceIdentifier` | SHOULD       | \*          | A HTTP URL of the Issuing CA's certificate. |
 | Any other value                             | -                           | MUST NOT     | -           | No other `accessMethod`s may be used. |
 
-##### 7.1.2.7.8 Subscriber Certificate Basic Constraints
+##### 7.1.2.7.12 Subscriber Certificate Basic Constraints
 
 | **Field**           | **Description** |
 | ---                 | ------- |
 | `cA`                | MUST be FALSE |
 | `pathLenConstraint` | MUST NOT be present |
 
-##### 7.1.2.7.9 Subscriber Certificate Certificate Policies
+##### 7.1.2.7.13 Subscriber Certificate Certificate Policies
 
 If present, the Certificate Policies extension MUST contain at least one `PolicyInformation`. Each `PolicyInformation` MUST match the following profile:
 
@@ -2889,7 +3012,7 @@ Table: Permitted `policyQualifiers`
 
 [^first_policy_note]: Although [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280) allows `PolicyInformation`s to appear in any order, several client implementations have implemented logic that considers the `policyIdentifier` that matches a given filter. As such, ensuring the Reserved Certificate Policy Identifier is the first `PolicyInformation` reduces the risk of interoperability challenges.
 
-##### 7.1.2.7.10 Subscriber Certificate Extended Key Usage
+##### 7.1.2.7.14 Subscriber Certificate Extended Key Usage
 
 | **Key Purpose**                    | **OID**                 | **Presence**    |
 | ----                               | ----                    | --              |
@@ -2903,7 +3026,7 @@ Table: Permitted `policyQualifiers`
 | Precertificate Signing Certificate | 1.3.6.1.4.1.11129.2.4.4 | MUST NOT        |
 | Any other value                    | -                       | NOT RECOMMENDED |
 
-##### 7.1.2.7.11 Subscriber Certificate Key Usage
+##### 7.1.2.7.15 Subscriber Certificate Key Usage
 
 The acceptable Key Usage values vary based on whether the Certificate's `subjectPublicKeyInfo` identifies an RSA public key, an ECC public key, or an ML-DSA public key. CAs MUST ensure the Key Usage is appropriate for the Certificate Public Key.
 
@@ -2953,7 +3076,7 @@ Table: Key Usage for ML-DSA Public Keys
 | `encipherOnly`     | N             | --               |
 | `decipherOnly`     | N             | --               |
 
-##### 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
+##### 7.1.2.7.16 Subscriber Certificate Subject Alternative Name
 
 For Subscriber Certificates, the Subject Alternative Name MUST be present and MUST contain at least one `dNSName` or `iPAddress` `GeneralName`. See below for further requirements about the permitted fields and their validation requirements.
 
@@ -3094,11 +3217,13 @@ Table: Permitted `policyQualifiers`
 
 A Precertificate is a signed data structure that can be submitted to a Certificate Transparency log, as defined by [RFC 6962](https://datatracker.ietf.org/doc/html/rfc6962). A Precertificate appears structurally identical to a Certificate, with the exception of a special critical poison extension in the `extensions` field, with the OID of 1.3.6.1.4.1.11129.2.4.3. This extension ensures that the Precertificate will not be accepted as a Certificate by clients conforming to [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280). The existence of a signed Precertificate can be treated as evidence of a corresponding Certificate also existing, as the signature represents a binding commitment by the CA that it may issue such a Certificate.
 
-A Precertificate is created after a CA has decided to issue a Certificate, but prior to the actual signing of the Certificate. The CA MAY construct and sign a Precertificate corresponding to the Certificate, for purposes of submitting to Certificate Transparency Logs. The CA MAY use the returned Signed Certificate Timestamps to then alter the Certificate's `extensions` field, adding a Signed Certificate Timestamp List, as defined in [Section 7.1.2.11.3](#712113-signed-certificate-timestamp-list) and as permitted by the relevant profile, prior to signing the Certificate.
+A Precertificate is created after a CA has decided to issue a Certificate, but prior to the actual signing of the Certificate. The CA MAY construct and sign a Precertificate corresponding to the Certificate, for purposes of submitting to Certificate Transparency Logs, provided that the corresponding Certificate does not assert a Legacy Restricted Reserved Certificate Policy Identifier, as specified in [Section 7.1.6.1](#7161-reserved-certificate-policy-identifiers). The CA MAY use the returned Signed Certificate Timestamps to then alter the Certificate's `extensions` field, adding a Signed Certificate Timestamp List, as defined in [Section 7.1.2.11.3](#712113-signed-certificate-timestamp-list) and as permitted by the relevant profile, prior to signing the Certificate.
 
 Once a Precertificate is signed, relying parties are permitted to treat this as a binding commitment from the CA of the intent to issue a corresponding Certificate, or more commonly, that a corresponding Certificate exists. A Certificate is said to be corresponding to a Precertificate based upon the value of the `tbsCertificate` contents, as transformed by the process defined in [RFC 6962, Section 3.2](https://datatracker.ietf.org/doc/html/rfc6962#section-3.2).
 
 This profile describes the transformations that are permitted to a Certificate to construct a Precertificate. CAs MUST NOT issue a Precertificate unless they are willing to issue a corresponding Certificate, regardless of whether they have done so. Similarly, a CA MUST NOT issue a Precertificate unless the corresponding Certificate conforms to these Baseline Requirements, regardless of whether the CA signs the corresponding Certificate.
+
+The CA MUST NOT issue a Precertificate corresponding to a Certificate that asserts a Legacy Restricted Reserved Certificate Policy Identifier, as specified in [Section 7.1.6.1](#7161-reserved-certificate-policy-identifiers).
 
 A Precertificate may be issued either directly by the Issuing CA or, when issued prior to 2026-03-15, by a Technically Constrained Precertificate Signing CA, as defined in [Section 7.1.2.4](https://github.com/cabforum/servercert/blob/main/docs/BR.md#7124-technically-constrained-precertificate-signing-ca-certificate-profile). If issued by a Precertificate Signing CA, then in addition to the precertificate poison and signed certificate timestamp list extensions, the Precertificate issuer field and, if present, `authorityKeyIdentifier` extension, may differ from the Certificate, as described below.
 
@@ -3339,6 +3464,14 @@ Any `otherName`, if present:
 
 CAs SHALL NOT include additional names unless the CA is aware of a reason for including the data in the Certificate.
 
+##### 7.1.2.10.9 CA Certificate Legacy Restricted Hierarchies
+
+A Root CA Certificate or Subordinate CA Certificate MUST NOT be used to issue, directly or transitively, both Subscriber Certificates that assert a Legacy Restricted Reserved Certificate Policy Identifier, as specified in [Section 7.1.6.1](#7161-reserved-certificate-policy-identifiers), and Subscriber Certificates that do not.
+
+A Root CA Certificate or Subordinate CA Certificate that asserts a Legacy Restricted Reserved Certificate Policy Identifier MUST NOT be used to issue, directly or transitively, any Subscriber Certificate that does not assert a Legacy Restricted Reserved Certificate Policy Identifier.
+
+A Subordinate CA Certificate that is used to issue a Certificate asserting a Legacy Restricted Reserved Certificate Policy Identifier MUST itself assert at least one Legacy Restricted Reserved Certificate Policy Identifier, and MUST NOT contain the `anyPolicy` Policy Identifier.
+
 #### 7.1.2.11 Common Certificate Fields
 
 This section contains several fields that are common among multiple certificate profiles. However, these fields may not be common among all certificate profiles. Before issuing a certificate, the CA MUST ensure the certificate contents, including the contents of each field, complies in whole with all of the requirements of at least one Certificate Profile documented in [Section 7.1.2](#712-certificate-content-and-extensions).
@@ -3383,6 +3516,8 @@ Table: `DistributionPoint` profile
 A `fullName` MUST contain at least one `GeneralName`; it MAY contain more than one. All `GeneralName`s MUST be of type `uniformResourceIdentifier`, and the scheme of each MUST be "http". The first `GeneralName` must contain the HTTP URL of the Issuing CA's CRL service for this certificate.
 
 ##### 7.1.2.11.3 Signed Certificate Timestamp List
+
+This extension MUST NOT appear in Subscriber Certificates asserting a Legacy Restricted Reserved Certificate Policy Identifier, as specified in [Section 7.1.6.1](#7161-reserved-certificate-policy-identifiers).
 
 If present, the Signed Certificate Timestamp List extension contents MUST be an `OCTET STRING` containing the encoded `SignedCertificateTimestampList`, as specified in [RFC 6962, Section 3.3](https://datatracker.ietf.org/doc/html/rfc6962#section-3.3).
 
@@ -3462,6 +3597,8 @@ In particular, it applies to all of the following objects and fields:
 No other encodings are permitted for these fields.
 
 ##### 7.1.3.2.1 RSA
+
+The CA SHALL NOT use a Private Key corresponding to a Public Key specified in this Section to sign a Certificate or Precertificate whose subjectPublicKeyInfo field identifies a Public Key specified in Section 7.1.3.1.3 (ML-DSA).
 
 The CA SHALL use one of the following signature algorithms and encodings. When encoded, the `AlgorithmIdentifier` MUST be byte-for-byte identical with the specified hex-encoded bytes.
 
@@ -3546,6 +3683,8 @@ Until 2026-09-15, the CA MAY use the following signature algorithm and encoding 
 Prior to 2026‐09‐15, the CA SHALL revoke any unexpired Subordinate CA Certificate that contains `RSASSA-PKCS1-v1_5 with SHA-1` within the Certificate.
 
 ##### 7.1.3.2.2 ECDSA
+
+The CA SHALL NOT use a Private Key corresponding to a Public Key specified in this Section to sign a Certificate or Precertificate whose subjectPublicKeyInfo field identifies a Public Key specified in Section 7.1.3.1.3 (ML-DSA).
 
 The CA SHALL use the appropriate signature algorithm and encoding based upon the signing key used.
 
@@ -3633,7 +3772,7 @@ Table: Encoding Requirements for Selected Attributes
 
 #### 7.1.4.3 Subscriber Certificate Common Name Attribute
 
-If present, this attribute MUST contain exactly one entry that is one of the values contained in the Certificate's `subjectAltName` extension (see [Section 7.1.2.7.12](#712712-subscriber-certificate-subject-alternative-name)). The value of the field MUST be encoded as follows:
+If present, this attribute MUST contain exactly one entry that is one of the values contained in the Certificate's `subjectAltName` extension (see [Section 7.1.2.7.16](#712716-subscriber-certificate-subject-alternative-name)). The value of the field MUST be encoded as follows:
 
 - If the value is an IPv4 address, then the value MUST be encoded as an IPv4Address as specified in [RFC 3986, Section 3.2.2](https://datatracker.ietf.org/doc/html/rfc3986#section-3.2.2).
 - If the value is an IPv6 address, then the value MUST be encoded in the text representation specified in [RFC 5952, Section 4](https://datatracker.ietf.org/doc/html/rfc5952#section-4).
@@ -3656,7 +3795,7 @@ See Sections [7.1.2.5.2 Technically Constrained TLS Subordinate CA Name Constrai
 
 #### 7.1.6.1 Reserved Certificate Policy Identifiers
 
-The following Certificate Policy identifiers are reserved for use by CAs as an optional means of asserting that a Certificate complies with these Requirements.
+The following Certificate Policy identifiers are reserved for use by CAs as a means of asserting that a Certificate complies with these Requirements. Assertion of a Reserved Certificate Policy Identifier is required where specified by the applicable Certificate Profile.
 
 `{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) domain-validated(1)} (2.23.140.1.2.1)`
 
@@ -3664,7 +3803,17 @@ The following Certificate Policy identifiers are reserved for use by CAs as an o
 
 `{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) individual-validated(3)} (2.23.140.1.2.3)`
 
+`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) domain-validated-legacy-restricted-application(4)} (2.23.140.1.2.4)` 
+
+`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) organization-validated-legacy-restricted-application(5)} (2.23.140.1.2.5)` 
+
+`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) baseline-requirements(2) individual-validated-legacy-restricted-application(6)} (2.23.140.1.2.6)`
+
 `{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) ev-guidelines(1)} (2.23.140.1.1)`
+
+`{joint-iso-itu-t(2) international-organizations(23) ca-browser-forum(140) certificate-policies(1) ev-guidelines(1) legacy-restricted-application(1)} (2.23.140.1.1.1)`
+
+The identifiers `2.23.140.1.2.4`, `2.23.140.1.2.5`, `2.23.140.1.2.6`, and `2.23.140.1.1.1` are collectively referred to as the "Legacy Restricted Reserved Certificate Policy Identifiers".
 
 ### 7.1.7 Usage of Policy Constraints extension
 
